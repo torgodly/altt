@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | إدارة المركز التخصصي لطب وزراعة الأسنان</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+  <div class="app-container" id="dashboard-app">
+
+    <!-- Top Header Navigation -->
+    <header class="header-nav">
+      <div class="brand-logo">
+        <div class="logo-icon">
+          <img src="../images/logo.png" alt="المركز التخصصي لطب وزراعة الاسنان" class="brand-logo-img">
+        </div>
+        <div class="brand-text">
+          <h1 data-i18n="adminDashboard">لوحة تحكم إدارة العيادة</h1>
+          <p data-i18n="clinicTitle">المركز التخصصي لطب وزراعة الاسنان</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="export-backup-btn" class="btn btn-secondary btn-sm" title="Backup JSON">
+          💾 <span data-i18n="backupRestore">نسخ احتياطي</span>
+        </button>
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;" title="Restore Backup">
+          📥 استعادة <input type="file" id="restore-backup-file" accept=".json" style="display:none;">
+        </label>
+        <button id="view-audit-logs-btn" class="btn btn-secondary btn-sm">
+          📋 <span data-i18n="auditLogTitle">سجل التدقيق</span>
+        </button>
+        <button id="manage-users-btn" class="btn btn-secondary btn-sm" title="إدارة المستخدمين" style="display:none;">
+          👤 إدارة المستخدمين
+        </button>
+        <button id="theme-toggle-btn" class="btn-icon-toggle" aria-label="Toggle Theme">
+          <span>🌙</span>
+          <span id="theme-btn-text">الوضع الفاتح</span>
+        </button>
+        <button id="lang-toggle-btn" class="btn-icon-toggle" aria-label="Toggle Language">
+          🌐 <span data-i18n="langSwitch">English</span>
+        </button>
+        <button id="logout-btn" class="btn btn-danger btn-sm" data-i18n="logout">
+          🚪 خروج
+        </button>
+      </div>
+    </header>
+
+    <!-- Stat KPI Cards -->
+    <div class="dashboard-grid">
+      <div class="stat-card" id="stat-card-followups" style="cursor:pointer;"
+        title="انقر لتصفية الحالات التي لها متابعات">
+        <div class="stat-icon followups"
+          style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-size: 1.5rem;">📅</div>
+        <div class="stat-info">
+          <span data-i18n="followUpsTitle">المتابعات</span>
+          <h3 id="stat-followup-patients">0</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon total">👥</div>
+        <div class="stat-info">
+          <span data-i18n="totalPatients">إجمالي المرضى</span>
+          <h3 id="stat-total-patients">0</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon today">📅</div>
+        <div class="stat-info">
+          <span data-i18n="todayRegistrations">تسجيلات اليوم</span>
+          <h3 id="stat-today-patients">0</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon month">📆</div>
+        <div class="stat-info">
+          <span data-i18n="monthlyRegistrations">تسجيلات الشهر</span>
+          <h3 id="stat-month-patients">0</h3>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon recent">✨</div>
+        <div class="stat-info">
+          <span data-i18n="recentPatients">المرضى المضافون مؤخراً</span>
+          <h3 id="stat-recent-patients">0</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patient Directory Table Section -->
+    <div class="glass-card">
+
+      <!-- Toolbar & Filters -->
+      <div class="toolbar-card">
+        <div class="search-box">
+          <input type="text" id="search-input" class="form-control" data-i18n-ph="searchPlaceholder"
+            placeholder="بحث برقم الملف، الاسم، الهاتف، أو الرقم الوطني...">
+        </div>
+        <div class="filter-actions">
+          <select id="followup-filter" class="form-control no-icon"
+            style="width:auto; min-width:220px; border-color: var(--color-success);">
+            <option value="all">👥 جميع المرضى</option>
+            <option value="followups_only">📅 حالات المتابعة</option>
+            <option value="followups_added_today">🟢 متابعات مضافة اليوم</option>
+            <option value="followups_added_yesterday">🟡 متابعات مضافة أمس</option>
+            <option value="appointment_today">🔔 موعد اليوم</option>
+            <option value="appointment_tomorrow">⏰ موعد الغد</option>
+          </select>
+          <select id="gender-filter" class="form-control no-icon" style="width:auto;">
+            <option value="" data-i18n="allGenders">جميع الأجناس</option>
+            <option value="Male" data-i18n="male">ذكر</option>
+            <option value="Female" data-i18n="female">أنثى</option>
+          </select>
+          <select id="insurance-filter" class="form-control no-icon" style="width:auto;">
+            <option value="" data-i18n="allInsurance">حالة التأمين</option>
+            <option value="Yes" data-i18n="yes">مؤمن</option>
+            <option value="No" data-i18n="no">غير مؤمن</option>
+          </select>
+          <button id="batch-print-btn" class="btn btn-secondary btn-sm" style="display:none;"
+            onclick="DentalApp.printSelectedFollowups()">
+            🖨️ <span data-i18n="printSelectedFollowups">طباعة المتابعات المحددة</span> (<span
+              id="selected-count">0</span>)
+          </button>
+          <a href="../index.html" class="btn btn-primary btn-sm">
+            ➕ تسجيل مريض جديد
+          </a>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:38px; text-align:center;">
+                <input type="checkbox" id="select-all-checkbox" title="تحديد جميع الحالات المعتمدة للطباعة"
+                  style="cursor:pointer; width:16px; height:16px;" />
+              </th>
+              <th data-i18n="fileNumberLabel">رقم الملف</th>
+              <th data-i18n="fullName">الاسم الكامل</th>
+              <th data-i18n="phone">رقم الهاتف</th>
+              <th data-i18n="nationalNumber">الرقم الوطني</th>
+              <th data-i18n="nextVisitHeader">موعد الزيارة القادم</th>
+              <th data-i18n="actions" style="text-align:left;">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="patient-table-body">
+            <!-- Rendered dynamically by script.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Hidden Print Container for Follow-up Reports -->
+  <div id="printable-followups-container" class="printable-followups-only" style="display:none;"></div>
+
+  <!-- Reusable Details / Odontogram Modal -->
+  <div class="modal-backdrop" id="patient-details-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>تفاصيل ملف المريض</h3>
+        <button class="modal-close-btn"
+          onclick="document.getElementById('patient-details-modal').classList.remove('active')">✕</button>
+      </div>
+      <div class="modal-body" id="patient-modal-content">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-modal-print" data-i18n="printFile">🖨️ طباعة الملف الكامل</button>
+        <button class="btn btn-primary" id="btn-modal-close" data-i18n="closeModal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Management Modal -->
+  <div class="modal-backdrop" id="user-management-modal">
+    <div class="modal-container" style="max-width:600px;">
+      <div class="modal-header">
+        <h3>👤 إدارة المستخدمين</h3>
+        <button class="modal-close-btn" onclick="document.getElementById('user-management-modal').classList.remove('active')">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Add New User Form -->
+        <div style="background:var(--surface-input); border-radius:var(--radius-md); padding:1.25rem; margin-bottom:1.5rem; border:1px solid var(--surface-card-border);">
+          <h4 style="margin:0 0 1rem 0; color:var(--accent-primary); font-size:1rem;">➕ إضافة مستخدم جديد</h4>
+          <form id="add-user-form" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+            <div class="form-group" style="margin:0;">
+              <label for="new-username" style="font-size:0.85rem;">اسم المستخدم</label>
+              <div class="input-wrapper">
+                <input type="text" id="new-username" class="form-control no-icon" placeholder="اسم المستخدم الجديد" autocomplete="off" required>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="new-password" style="font-size:0.85rem;">كلمة المرور</label>
+              <div class="input-wrapper">
+                <input type="password" id="new-password" class="form-control no-icon" placeholder="كلمة المرور" autocomplete="new-password" required>
+              </div>
+            </div>
+            <div style="grid-column:1/-1; display:flex; gap:0.5rem; justify-content:flex-end;">
+              <button type="submit" class="btn btn-primary btn-sm">💾 إضافة المستخدم</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Existing Users List -->
+        <div>
+          <h4 style="margin:0 0 0.75rem 0; color:var(--accent-primary); font-size:1rem;">📋 المستخدمون الحاليون</h4>
+          <div id="users-list-container"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('user-management-modal').classList.remove('active')">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/script.js"></script>
+</body>
+
+</html>

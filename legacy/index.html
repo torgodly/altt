@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المركز التخصصي لطب وزراعة الاسنان | تسجيل المريض</title>
+  <meta name="description" content="نظام تسجيل وحفظ ملفات المرضى الإلكتروني لمركز التخصصي لطب وزراعة الاسنان">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Header Navigation -->
+    <header class="header-nav">
+      <div class="brand-logo">
+        <div class="logo-icon">
+          <img src="images/logo.png" alt="المركز التخصصي لطب وزراعة الاسنان" class="brand-logo-img">
+        </div>
+        <div class="brand-text">
+          <h1 data-i18n="clinicTitle">المركز التخصصي لطب وزراعة الاسنان</h1>
+          <p data-i18n="clinicSubtitle">نظام تسجيل وحفظ ملفات المرضى الإلكتروني</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="btn-icon-toggle" aria-label="Toggle Theme">
+          <span>🌙</span>
+          <span id="theme-btn-text" data-i18n="lightTheme">الوضع الفاتح</span>
+        </button>
+        <button id="lang-toggle-btn" class="btn-icon-toggle" aria-label="Toggle Language">
+          🌐 <span data-i18n="langSwitch">English</span>
+        </button>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" data-i18n="adminPanelLogin">🔐 دخول لوحة التحكم</a>
+      </div>
+    </header>
+
+    <!-- Banner Info -->
+    <section class="page-banner">
+      <div class="banner-content">
+        <h2 data-i18n="secPersonal">استمارة تسجيل مريض جديد</h2>
+        <p data-i18n="secPersonalSub">يرجى تعبئة كافة البيانات بدقة لضمان أفضل خدمة ورعاية صحية</p>
+      </div>
+      <div class="file-badge-box">
+        <span data-i18n="fileNumberLabel">رقم الملف التلقائي</span>
+        <strong id="file-number-badge">DENT-2026-1001</strong>
+      </div>
+    </section>
+
+    <!-- Registration Form -->
+    <form id="patient-registration-form" novalidate>
+
+      <!-- Section 1: Personal Information -->
+      <div class="glass-card">
+        <div class="section-header">
+          <div class="section-icon">1</div>
+          <div>
+            <h3 data-i18n="secPersonal">المعلومات الشخصية</h3>
+            <p data-i18n="secPersonalSub">بيانات الهوية والتواصل للمريض</p>
+          </div>
+        </div>
+
+        <div class="form-grid form-grid-3">
+          <!-- File Opening Date -->
+          <div class="form-group">
+            <label data-i18n="fileDateLabel">تاريخ فتح الملف</label>
+            <div class="input-wrapper">
+              <input type="date" id="fileDate" class="form-control no-icon" readonly>
+            </div>
+          </div>
+
+          <!-- File Number -->
+          <div class="form-group">
+            <label data-i18n="fileNumberLabel">رقم الملف التلقائي</label>
+            <div class="input-wrapper">
+              <input type="text" id="fileNumber" class="form-control no-icon" readonly>
+            </div>
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-group full-width">
+            <label for="fullName"><span data-i18n="fullName">الاسم الكامل (رباعي)</span> <span
+                class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="fullName" class="form-control" data-i18n-ph="fullNamePlaceholder"
+                placeholder="مثال: أحمد محمد علي حسن" required>
+            </div>
+          </div>
+
+          <!-- National ID / Passport -->
+          <div class="form-group">
+            <label for="nationalId" data-i18n="nationalId">رقم الهوية / الجواز</label>
+            <div class="input-wrapper">
+              <input type="text" id="nationalId" class="form-control" data-i18n-ph="nationalIdPlaceholder"
+                placeholder="رقم الهوية أو الجواز">
+            </div>
+          </div>
+
+          <!-- National Number (Optional) -->
+          <div class="form-group">
+            <label for="nationalNumber"><span data-i18n="nationalNumber">الرقم الوطني (اختياري)</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="nationalNumber" class="form-control" maxlength="12" data-i18n-ph="nationalNumberPlaceholder" placeholder="الرقم الوطني (اختياري)">
+            </div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="form-group">
+            <label for="dob" data-i18n="dob">تاريخ الميلاد</label>
+            <div class="input-wrapper">
+              <input type="date" id="dob" class="form-control no-icon">
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div class="form-group">
+            <label for="gender" data-i18n="gender">الجنس</label>
+            <div class="input-wrapper">
+              <select id="gender" class="form-control no-icon">
+                <option value="Male" data-i18n="male">ذكر</option>
+                <option value="Female" data-i18n="female">أنثى</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Primary Phone Number (10 Digits starting with 09) -->
+          <div class="form-group">
+            <label for="phone"><span data-i18n="phone">رقم الهاتف</span> <span
+                class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="phone" class="form-control" maxlength="10" data-i18n-ph="phonePlaceholder" placeholder="رقم الهاتف" required>
+            </div>
+          </div>
+
+          <!-- Additional Phone Number (10 Digits starting with 09 - Mandatory) -->
+          <div class="form-group">
+            <label for="additionalPhone"><span data-i18n="additionalPhone">رقم هاتف إضافي</span> <span
+                class="required-asterisk">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="additionalPhone" class="form-control" maxlength="10" data-i18n-ph="additionalPhonePlaceholder" placeholder="رقم هاتف إضافي" required>
+            </div>
+          </div>
+
+          <!-- Emergency Contact Name -->
+          <div class="form-group">
+            <label for="emergencyName" data-i18n="emergencyName">اسم شخص للتواصل وقت الطوارئ</label>
+            <div class="input-wrapper">
+              <input type="text" id="emergencyName" class="form-control no-icon">
+            </div>
+          </div>
+
+          <!-- Emergency Contact Phone -->
+          <div class="form-group">
+            <label for="emergencyPhone" data-i18n="emergencyPhone">رقم هاتف الطوارئ</label>
+            <div class="input-wrapper">
+              <input type="text" id="emergencyPhone" class="form-control" maxlength="10" placeholder="رقم هاتف الطوارئ">
+            </div>
+
+            <!-- Marital Status -->
+            <div class="form-group">
+              <label for="maritalStatus" data-i18n="maritalStatus">الحالة الاجتماعية</label>
+              <div class="input-wrapper">
+                <select id="maritalStatus" class="form-control no-icon">
+                  <option value="Single" data-i18n="single">أعزب / عزباء</option>
+                  <option value="Married" data-i18n="married">متزوج / متزوجة</option>
+                  <option value="Divorced" data-i18n="divorced">مطلق / مطلقة</option>
+                  <option value="Widowed" data-i18n="widowed">أرمل / أرملة</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Educational Status -->
+            <div class="form-group">
+              <label for="eduStatus" data-i18n="eduStatus">المستوى التعليمي</label>
+              <div class="input-wrapper">
+                <select id="eduStatus" class="form-control no-icon">
+                  <option value="Primary" data-i18n="primaryEdu">ابتدائي</option>
+                  <option value="Secondary" data-i18n="secondaryEdu">ثانوي</option>
+                  <option value="University" data-i18n="universityEdu">جامعي / دراسات عليا</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Blood Type -->
+            <div class="form-group">
+              <label for="bloodType" data-i18n="bloodType">فصيلة الدم</label>
+              <div class="input-wrapper">
+                <select id="bloodType" class="form-control no-icon">
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Full Address -->
+            <div class="form-group full-width">
+              <label for="address" data-i18n="address">العنوان الكامل (مع أقرب نقطة دالة)</label>
+              <div class="input-wrapper">
+                <textarea id="address" class="form-control no-icon" data-i18n-ph="addressPlaceholder"
+                  placeholder="المدينة، الحي، اسم الشارع، القرب من نقطة دالة"></textarea>
+              </div>
+            </div>
+
+            <!-- Patient Additional Notes -->
+            <div class="form-group full-width">
+              <label for="patientNotes" data-i18n="patientNotes">ملاحظات المريض / أي إضافات يرغب بذكرها</label>
+              <div class="input-wrapper">
+                <textarea id="patientNotes" class="form-control no-icon" data-i18n-ph="patientNotesPlaceholder"
+                  placeholder="اكتب أي ملاحظات إضافية، أعراض خاصة، أو تفاصيل يرغب المريض بذكرها للحيـب..."></textarea>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section 2: Medical History -->
+        <div class="glass-card">
+          <div class="section-header">
+            <div class="section-icon">2</div>
+            <div>
+              <h3 data-i18n="secMedical">التاريخ الطبي والصحي</h3>
+              <p data-i18n="secMedicalSub">الأسئلة الطبية الهامة لسلامة العلاج</p>
+            </div>
+          </div>
+
+          <div class="medical-questions-list">
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qChronic">هل تشتكي من أي أمراض مزمنة؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qChronic" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qChronic" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qMeds">هل تتناول أي أدوية بانتظام في الوقت الحالي؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qMeds" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qMeds" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qAllergies">هل لديك حساسيه تجاه أي نوع من الأدوية؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qAllergies" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qAllergies" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qRegularTreatment">هل تتلقى علاجاً دورياً لأمراض مزمنة؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qRegularTreatment" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qRegularTreatment" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qSurgeries">هل أجريت أي عمليات جراحية سابقة؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qSurgeries" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qSurgeries" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qExtraction">هل خضعت لخلع أسنان سابقاً؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qExtraction" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qExtraction" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qThyroid">هل تعاني من أمراض الغدة الدرقية؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qThyroid" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qThyroid" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qPressure">هل تعاني من ارتفاع أو انخفاض ضغط الدم؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qPressure" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qPressure" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qDiabetes">هل تعاني من مرض السكري؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qDiabetes" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qDiabetes" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qHeart">هل تعاني من أمراض القلب أو سبق لك الإصابة بجلطة؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qHeart" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qHeart" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qKidneyLiver">هل تعاني من أمراض الكبد أو الكلى؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qKidneyLiver" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qKidneyLiver" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qBloodThinner">هل تتناول أدوية مسيلة للدم (مثل الأسبرين أو
+                الوارفارين)؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qBloodThinner" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qBloodThinner" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <div class="medical-item">
+              <span class="medical-item-text" data-i18n="qAnesthesiaAllergy">هل تعرضت سابقاً لحساسية أو مضاعفات من البنج
+                الموضعي؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qAnesthesiaAllergy" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qAnesthesiaAllergy" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+            <!-- Female Only Field -->
+            <div class="medical-item" id="pregnancy-question-wrapper" style="display:none;">
+              <span class="medical-item-text" data-i18n="qPregnancy">(خاص بالإناث) هل أنتِ حامل أو مرضعة؟</span>
+              <div class="radio-group">
+                <label class="custom-radio"><input type="radio" name="qPregnancy" value="Yes"><span
+                    data-i18n="yes">نعم</span></label>
+                <label class="custom-radio"><input type="radio" name="qPregnancy" value="No" checked><span
+                    data-i18n="no">لا</span></label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Section 3: Insurance Information -->
+        <div class="glass-card">
+          <div class="section-header">
+            <div class="section-icon">3</div>
+            <div>
+              <h3 data-i18n="secInsurance">معلومات التأمين الصحي</h3>
+              <p data-i18n="secInsuranceSub">تفاصيل التغطية التأمينية إن وجدت</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="hasInsurance">هل لديك تأمين صحي؟</label>
+            <div class="radio-group">
+              <label class="custom-radio"><input type="radio" name="hasInsurance" value="Yes"><span
+                  data-i18n="yes">نعم</span></label>
+              <label class="custom-radio"><input type="radio" name="hasInsurance" value="No" checked><span
+                  data-i18n="no">لا</span></label>
+            </div>
+          </div>
+
+          <div id="insurance-details-wrapper" class="form-grid form-grid-2" style="display:none; margin-top:1.25rem;">
+            <div class="form-group">
+              <label for="insuranceCompany" data-i18n="insuranceCompany">اسم شركة التأمين</label>
+              <div class="input-wrapper">
+                <input type="text" id="insuranceCompany" class="form-control no-icon" placeholder="اسم شركة التأمين">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="insuranceCardNo" data-i18n="insuranceCardNo">رقم بطاقة التأمين</label>
+              <div class="input-wrapper">
+                <input type="text" id="insuranceCardNo" class="form-control no-icon" placeholder="رقم بطاقة التأمين">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; justify-content:flex-end; gap:1rem; margin-bottom:3rem;">
+          <button type="reset" class="btn btn-secondary" data-i18n="resetForm">إعادة ضبط</button>
+          <button type="submit" class="btn btn-primary" data-i18n="submitForm">💾 حفظ وتسجيل ملف المريض</button>
+        </div>
+
+    </form>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-backdrop" id="confirmation-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 data-i18n="successTitle">تم حفظ الملف بنجاح!</h3>
+        <button class="modal-close-btn" id="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body" id="modal-receipt-body">
+        <div class="print-clinic-header"
+          style="display:flex; align-items:center; justify-content:center; gap:0.75rem; margin-bottom:1.25rem; border-bottom:1px solid var(--surface-card-border); padding-bottom:0.75rem;">
+          <img src="images/logo.png" alt="Logo"
+            style="width:48px; height:48px; object-fit:contain; border-radius:50%; border:2px solid var(--accent-primary); flex-shrink:0;">
+          <div>
+            <h2 style="margin:0; font-size:1.3rem; font-weight:800; color:var(--accent-primary);"
+              data-i18n="clinicTitle">
+              المركز التخصصي لطب وزراعة الاسنان</h2>
+            <p style="margin:0.25rem 0 0 0; font-size:0.85rem; color:var(--text-muted);" data-i18n="clinicSubtitle">نظام
+              تسجيل وحفظ ملفات المرضى الإلكتروني</p>
+          </div>
+        </div>
+        <div class="file-badge-box" style="margin-bottom:1.5rem;">
+          <span data-i18n="fileNumberLabel">رقم ملف المريض الخاص بك</span>
+          <strong id="modal-file-num" style="font-size:2rem;">DENT-2026-1001</strong>
+        </div>
+        <div
+          style="background:var(--surface-input); padding:1.25rem; border-radius:var(--radius-md); font-size:0.95rem;">
+          <p><strong>اسم المريض:</strong> <span id="modal-patient-name"></span></p>
+          <p><strong>رقم الهاتف:</strong> <span id="modal-patient-phone"></span></p>
+          <p><strong>رقم هاتف إضافي:</strong> <span id="modal-patient-additionalPhone"></span></p>
+          <p><strong>الرقم الوطني:</strong> <span id="modal-patient-nat"></span></p>
+          <p><strong>تاريخ التسجيل:</strong> <span id="modal-patient-date"></span></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-close-modal-footer">إغلاق</button>
+        <a href="admin/login.html" class="btn btn-primary" data-i18n="adminDashboard">📊 الذهاب للوحة التحكم</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+
+</html>
