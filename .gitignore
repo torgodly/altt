@@ -29,8 +29,10 @@ yarn-error.log*
 
 # database
 /data/*.db
-/data/*.db-journal
+/data/*.db-shm
+/data/*.db-wal
 /data/uploads/*
+!data/.gitkeep
 
 # typescript
 next-env.d.ts

@@ -2,8 +2,6 @@ import { getDb } from './client';
 import { ensureMigrations } from './migrate';
 import type { MedicalHistory, Odontogram } from '@/lib/types';
 
-ensureMigrations();
-
 export interface PatientRow {
   id: string;
   file_number: string;

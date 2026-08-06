@@ -167,6 +167,9 @@ export function runMigrations() {
 let migrated = false;
 
 export function ensureMigrations() {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
   if (!migrated) {
     runMigrations();
     migrated = true;
