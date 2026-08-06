@@ -1,5 +1,18 @@
 import bcrypt from 'bcryptjs';
 import { getDb } from './client';
+import { getSuperAdminUsername, getSuperAdminPassword } from '@/lib/constants';
+
+function addColumnIfNotExists(
+  db: ReturnType<typeof getDb>,
+  table: string,
+  column: string,
+  definition: string
+) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
 
 export function runMigrations() {
   const db = getDb();
@@ -15,6 +28,15 @@ export function runMigrations() {
       username TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       is_super_admin INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS doctors (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      specialty TEXT,
+      phone TEXT,
+      active INTEGER NOT NULL DEFAULT 1,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -90,7 +112,13 @@ export function runMigrations() {
     CREATE INDEX IF NOT EXISTS idx_follow_ups_date ON follow_ups(date);
     CREATE INDEX IF NOT EXISTS idx_attachments_patient_id ON attachments(patient_id);
     CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+    CREATE INDEX IF NOT EXISTS idx_doctors_name ON doctors(name);
   `);
+
+  addColumnIfNotExists(db, 'patients', 'doctor_id', 'TEXT REFERENCES doctors(id)');
+  addColumnIfNotExists(db, 'patients', 'doctor_notes', 'TEXT');
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_patients_doctor_id ON patients(doctor_id)`);
 
   const seqRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('file_seq') as
     | { value: string }
@@ -105,13 +133,34 @@ export function runMigrations() {
   };
 
   if (userCount.count === 0) {
-    const username = process.env.SUPER_ADMIN_USERNAME || 'admin';
-    const password = process.env.SUPER_ADMIN_PASSWORD || 'ChangeMe123!';
+    const username = getSuperAdminUsername();
+    const password = getSuperAdminPassword();
     const hash = bcrypt.hashSync(password, 12);
 
     db.prepare(
       'INSERT INTO admin_users (username, password_hash, is_super_admin) VALUES (?, ?, 1)'
     ).run(username, hash);
+  } else {
+    // Ensure the designated super-admin account exists with current credentials
+    const username = getSuperAdminUsername();
+    const password = getSuperAdminPassword();
+    const hash = bcrypt.hashSync(password, 12);
+    const existing = db.prepare('SELECT id FROM admin_users WHERE username = ?').get(username) as
+      | { id: number }
+      | undefined;
+
+    if (!existing) {
+      db.prepare(
+        'INSERT INTO admin_users (username, password_hash, is_super_admin) VALUES (?, ?, 1)'
+      ).run(username, hash);
+    }
+  }
+
+  const doctorCount = db.prepare('SELECT COUNT(*) as count FROM doctors').get() as { count: number };
+  if (doctorCount.count === 0) {
+    db.prepare(
+      `INSERT INTO doctors (id, name, specialty, phone, active) VALUES (?, ?, ?, ?, 1)`
+    ).run('doc_default', 'Dr. Assad Matoug', 'General Dentistry', '');
   }
 }
 

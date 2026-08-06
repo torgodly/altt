@@ -14,6 +14,14 @@ import { updatePatientSchema } from '@/lib/validation';
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+function getDoctorName(db: ReturnType<typeof getDb>, doctorId: string | null): string {
+  if (!doctorId) return '';
+  const row = db.prepare('SELECT name FROM doctors WHERE id = ?').get(doctorId) as
+    | { name: string }
+    | undefined;
+  return row?.name || '';
+}
+
 function getPatientWithRelations(id: string) {
   const db = getDb();
   const row = db.prepare('SELECT * FROM patients WHERE id = ?').get(id) as PatientRow | undefined;
@@ -27,8 +35,10 @@ function getPatientWithRelations(id: string) {
     .prepare('SELECT * FROM attachments WHERE patient_id = ? ORDER BY uploaded_at DESC')
     .all(id) as AttachmentRow[];
 
+  const doctorName = getDoctorName(db, row.doctor_id);
+
   return {
-    patient: rowToPatient(row, followUps),
+    patient: rowToPatient(row, followUps, doctorName),
     attachments: attachments.map(rowToAttachment),
   };
 }
@@ -94,12 +104,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       hasInsurance: 'has_insurance',
       insuranceCompany: 'insurance_company',
       insuranceCardNo: 'insurance_card_no',
+      doctorId: 'doctor_id',
+      doctorNotes: 'doctor_notes',
     };
 
     for (const [key, col] of Object.entries(fieldMap)) {
       if (data[key as keyof typeof data] !== undefined) {
         updates.push(`${col} = @${col}`);
-        values[col] = data[key as keyof typeof data];
+        const val = data[key as keyof typeof data];
+        values[col] = key === 'doctorId' && (val === '' || val === null) ? null : val;
       }
     }
 

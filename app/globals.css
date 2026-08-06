@@ -1616,6 +1616,89 @@ body.printing-followups .modal-backdrop {
   font-weight: bold !important;
 }
 
+/* Printable Patient File */
+body.printing-patient-file #dashboard-app,
+body.printing-patient-file .modal-backdrop {
+  display: none !important;
+}
+
+#printable-patient-container.active-print {
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  padding: 1.5cm !important;
+  z-index: 999999 !important;
+  direction: rtl;
+}
+
+.print-patient-sheet {
+  max-width: 100%;
+}
+
+.print-patient-header {
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.print-patient-header h1 {
+  margin: 0;
+  font-size: 16pt;
+}
+
+.print-patient-file-badge {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #000;
+  background: #f8fafc;
+}
+
+.print-patient-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+}
+
+.print-patient-table th,
+.print-patient-table td {
+  border: 1px solid #000;
+  padding: 6px 10px;
+  text-align: right;
+  font-size: 10pt;
+}
+
+.print-patient-notes {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  .print-only {
+    display: block !important;
+  }
+}
+
+.doctor-notes-section {
+  margin-bottom: 1rem;
+}
+
+.doctor-notes-box {
+  border-right: 3px solid #14b8a6;
+}
+
 /* Procedure Quick Selection Chips */
 .procedure-chips-container {
   display: flex;
@@ -1915,6 +1998,7 @@ body.printing-followups .modal-backdrop {
 .admin-modal-header.admin-modal--delete { border-bottom-color: #ef4444; }
 .admin-modal-header.admin-modal--audit { border-bottom-color: #8b5cf6; }
 .admin-modal-header.admin-modal--users { border-bottom-color: #06b6d4; }
+.admin-modal-header.admin-modal--doctors { border-bottom-color: #14b8a6; }
 
 .admin-modal-header-text {
   display: flex;
@@ -2335,5 +2419,80 @@ body.printing-followups .modal-backdrop {
 
   .admin-info-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .filter-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-actions select,
+  .filter-actions .btn {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .admin-modal-backdrop {
+    padding: 0.5rem;
+  }
+
+  .admin-modal {
+    max-height: 96vh;
+    max-width: 100%;
+  }
+
+  .admin-modal-body {
+    padding: 0.85rem 1rem;
+  }
+
+  .patient-header-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .patient-header-meta {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .palmer-crosshair-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    font-size: 0.82rem;
+  }
+
+  .nav-actions {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .nav-actions .btn {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .user-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }

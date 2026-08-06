@@ -61,6 +61,18 @@ export const createPatientSchema = z.object({
 
 export const updatePatientSchema = createPatientSchema.partial().extend({
   odontogram: z.record(z.string()).optional(),
+  doctorId: z.string().nullable().optional(),
+  doctorNotes: z.string().optional(),
+});
+
+export const createDoctorSchema = z.object({
+  name: z.string().min(2),
+  specialty: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export const updateDoctorSchema = createDoctorSchema.partial().extend({
+  active: z.boolean().optional(),
 });
 
 export const followUpSchema = z.object({

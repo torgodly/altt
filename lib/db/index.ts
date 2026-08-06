@@ -27,8 +27,19 @@ export interface PatientRow {
   insurance_company: string | null;
   insurance_card_no: string | null;
   odontogram: string;
+  doctor_id: string | null;
+  doctor_notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface DoctorRow {
+  id: string;
+  name: string;
+  specialty: string | null;
+  phone: string | null;
+  active: number;
+  created_at: string;
 }
 
 export interface FollowUpRow {
@@ -96,7 +107,7 @@ export function incrementFileSeq() {
   ).run();
 }
 
-export function rowToPatient(row: PatientRow, followUps: FollowUpRow[] = []) {
+export function rowToPatient(row: PatientRow, followUps: FollowUpRow[] = [], doctorName?: string) {
   return {
     id: row.id,
     fileNumber: row.file_number,
@@ -120,10 +131,34 @@ export function rowToPatient(row: PatientRow, followUps: FollowUpRow[] = []) {
     insuranceCompany: row.insurance_company || '',
     insuranceCardNo: row.insurance_card_no || '',
     odontogram: JSON.parse(row.odontogram || '{}') as Odontogram,
+    doctorId: row.doctor_id || null,
+    doctorName: doctorName || '',
+    doctorNotes: row.doctor_notes || '',
     followUps: followUps.map(rowToFollowUp),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export function rowToDoctor(row: DoctorRow) {
+  return {
+    id: row.id,
+    name: row.name,
+    specialty: row.specialty || '',
+    phone: row.phone || '',
+    active: row.active === 1,
+    createdAt: row.created_at,
+  };
+}
+
+export function getDoctorNameMap(): Map<string, string> {
+  ensureMigrations();
+  const db = getDb();
+  const doctors = db.prepare('SELECT id, name FROM doctors WHERE active = 1').all() as {
+    id: string;
+    name: string;
+  }[];
+  return new Map(doctors.map((d) => [d.id, d.name]));
 }
 
 export function rowToFollowUp(row: FollowUpRow) {

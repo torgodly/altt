@@ -63,6 +63,9 @@ export interface Patient {
   insuranceCompany: string;
   insuranceCardNo: string;
   odontogram: Odontogram;
+  doctorId: string | null;
+  doctorName?: string;
+  doctorNotes: string;
   followUps?: FollowUp[];
   createdAt: string;
   updatedAt: string;
@@ -86,4 +89,14 @@ export interface AuditLog {
 export interface SessionUser {
   username: string;
   isSuperAdmin: boolean;
+  canManageUsers: boolean;
+}
+
+export interface Doctor {
+  id: string;
+  name: string;
+  specialty: string;
+  phone: string;
+  active: boolean;
+  createdAt: string;
 }

@@ -5,6 +5,7 @@ import {
   getNextFileNumber,
   incrementFileSeq,
   rowToPatient,
+  getDoctorNameMap,
   type PatientRow,
   type FollowUpRow,
 } from '@/lib/db/index';
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     const search = searchParams.get('search')?.toLowerCase() || '';
-    const gender = searchParams.get('gender') || '';
+    const doctor = searchParams.get('doctor') || '';
     const insurance = searchParams.get('insurance') || '';
     const followupFilter = searchParams.get('followup') || 'all';
 
@@ -41,8 +42,10 @@ export async function GET(request: NextRequest) {
       followUpsByPatient.set(fu.patient_id, list);
     }
 
+    const doctorNames = getDoctorNameMap();
+
     let mapped = patients.map((p) =>
-      rowToPatient(p, followUpsByPatient.get(p.id) || [])
+      rowToPatient(p, followUpsByPatient.get(p.id) || [], doctorNames.get(p.doctor_id || '') || '')
     );
 
     if (search) {
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (gender) mapped = mapped.filter((p) => p.gender === gender);
+    if (doctor) mapped = mapped.filter((p) => p.doctorId === doctor);
     if (insurance) mapped = mapped.filter((p) => p.hasInsurance === insurance);
 
     if (followupFilter !== 'all') {

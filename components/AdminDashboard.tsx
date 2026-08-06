@@ -7,7 +7,9 @@ import { useApp } from '@/components/AppProvider';
 import { Header } from '@/components/Header';
 import { t } from '@/lib/i18n';
 import { formatTimeTo12Hour, getDayNameFromDate, escapeHtml } from '@/lib/utils';
-import type { Patient, Attachment, AuditLog, SessionUser, FollowUp } from '@/lib/types';
+import { printPatientFile } from '@/lib/print-patient';
+import { FOLLOWUP_PROCEDURES } from '@/lib/constants';
+import type { Patient, Attachment, AuditLog, SessionUser, FollowUp, Doctor } from '@/lib/types';
 
 interface Stats {
   total: number;
@@ -32,11 +34,11 @@ export function AdminDashboard() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, today: 0, month: 0, recent: 0, followUps: 0 });
   const [search, setSearch] = useState('');
-  const [gender, setGender] = useState('');
+  const [doctorFilter, setDoctorFilter] = useState('');
   const [insurance, setInsurance] = useState('');
   const [followupFilter, setFollowupFilter] = useState('all');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [modal, setModal] = useState<'view' | 'edit' | 'followup' | 'audit' | 'users' | null>(null);
+  const [modal, setModal] = useState<'view' | 'edit' | 'followup' | 'audit' | 'users' | 'doctors' | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Patient | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [activePatient, setActivePatient] = useState<Patient | null>(null);
@@ -44,11 +46,12 @@ export function AdminDashboard() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [auditFilter, setAuditFilter] = useState('all');
   const [adminUsers, setAdminUsers] = useState<{ username: string; is_super_admin: number }[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
 
   const loadPatients = useCallback(async () => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
-    if (gender) params.set('gender', gender);
+    if (doctorFilter) params.set('doctor', doctorFilter);
     if (insurance) params.set('insurance', insurance);
     if (followupFilter) params.set('followup', followupFilter);
 
@@ -60,7 +63,15 @@ export function AdminDashboard() {
     const data = await res.json();
     setPatients(data.patients || []);
     setStats(data.stats || { total: 0, today: 0, month: 0, recent: 0, followUps: 0 });
-  }, [search, gender, insurance, followupFilter, router]);
+  }, [search, doctorFilter, insurance, followupFilter, router]);
+
+  const loadDoctors = useCallback(async () => {
+    const res = await fetch('/api/doctors');
+    if (res.ok) {
+      const data = await res.json();
+      setDoctors(data.doctors || []);
+    }
+  }, []);
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -72,8 +83,11 @@ export function AdminDashboard() {
   }, [router]);
 
   useEffect(() => {
-    if (user) loadPatients();
-  }, [user, loadPatients]);
+    if (user) {
+      loadPatients();
+      loadDoctors();
+    }
+  }, [user, loadPatients, loadDoctors]);
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -140,9 +154,22 @@ export function AdminDashboard() {
 
   async function openUsers() {
     const res = await fetch('/api/users');
+    if (res.status === 403) {
+      showToast(lang === 'ar' ? 'غير مصرح لك بإدارة المستخدمين' : 'Not authorized to manage users', 'error');
+      return;
+    }
+    if (!res.ok) {
+      showToast(lang === 'ar' ? 'فشل تحميل المستخدمين' : 'Failed to load users', 'error');
+      return;
+    }
     const data = await res.json();
     setAdminUsers(data.users || []);
     setModal('users');
+  }
+
+  async function openDoctors() {
+    await loadDoctors();
+    setModal('doctors');
   }
 
   function getLatestFollowUp(p: Patient): FollowUp | null {
@@ -257,7 +284,10 @@ export function AdminDashboard() {
       <button type="button" className="btn btn-secondary btn-sm" onClick={openAudit}>
         📋 {t(lang, 'auditLogTitle')}
       </button>
-      {user?.isSuperAdmin && (
+      <button type="button" className="btn btn-secondary btn-sm" onClick={openDoctors}>
+        🩺 {lang === 'ar' ? 'إدارة الأطباء' : 'Doctors'}
+      </button>
+      {user?.canManageUsers && (
         <button type="button" className="btn btn-secondary btn-sm" onClick={openUsers}>
           👤 {lang === 'ar' ? 'إدارة المستخدمين' : 'Users'}
         </button>
@@ -269,6 +299,7 @@ export function AdminDashboard() {
   );
 
   return (
+    <>
     <div className="app-container" id="dashboard-app">
       <Header title={t(lang, 'adminDashboard')} subtitle={t(lang, 'clinicTitle')} adminActions={adminActions} />
 
@@ -315,10 +346,11 @@ export function AdminDashboard() {
               <option value="appointment_today">🔔 {lang === 'ar' ? 'موعد اليوم' : 'Today Appointment'}</option>
               <option value="appointment_tomorrow">⏰ {lang === 'ar' ? 'موعد الغد' : 'Tomorrow Appointment'}</option>
             </select>
-            <select className="form-control no-icon" value={gender} onChange={(e) => setGender(e.target.value)} style={{ width: 'auto' }}>
-              <option value="">{t(lang, 'allGenders')}</option>
-              <option value="Male">{t(lang, 'male')}</option>
-              <option value="Female">{t(lang, 'female')}</option>
+            <select className="form-control no-icon" value={doctorFilter} onChange={(e) => setDoctorFilter(e.target.value)} style={{ width: 'auto', minWidth: 180 }}>
+              <option value="">{lang === 'ar' ? 'جميع الأطباء' : 'All Doctors'}</option>
+              {doctors.filter((d) => d.active).map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
             </select>
             <select className="form-control no-icon" value={insurance} onChange={(e) => setInsurance(e.target.value)} style={{ width: 'auto' }}>
               <option value="">{t(lang, 'allInsurance')}</option>
@@ -343,6 +375,7 @@ export function AdminDashboard() {
                 </th>
                 <th>{t(lang, 'fileNumberLabel')}</th>
                 <th>{t(lang, 'fullName')}</th>
+                <th>{lang === 'ar' ? 'الطبيب' : 'Doctor'}</th>
                 <th>{t(lang, 'phone')}</th>
                 <th>{t(lang, 'nationalNumber')}</th>
                 <th>{t(lang, 'nextVisitHeader')}</th>
@@ -351,7 +384,7 @@ export function AdminDashboard() {
             </thead>
             <tbody>
               {patients.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>{t(lang, 'noData')}</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>{t(lang, 'noData')}</td></tr>
               ) : (
                 patients.map((p) => {
                   const latest = getLatestFollowUp(p);
@@ -362,6 +395,7 @@ export function AdminDashboard() {
                       </td>
                       <td><code className="file-code">{p.fileNumber}</code></td>
                       <td><strong>{p.fullName}</strong></td>
+                      <td>{p.doctorName || '-'}</td>
                       <td dir="ltr">{p.phone}</td>
                       <td>{p.nationalNumber || '-'}</td>
                       <td>{latest ? `${latest.date} ${latest.time12 || formatTimeTo12Hour(latest.time, lang)}` : '-'}</td>
@@ -390,8 +424,6 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <div id="printable-followups-container" className="printable-followups-only" style={{ display: 'none' }} />
-
       {deleteTarget && (
         <DeleteConfirmModal
           patient={deleteTarget}
@@ -407,6 +439,7 @@ export function AdminDashboard() {
           mode={modal}
           patient={activePatient}
           attachments={attachments}
+          doctors={doctors.filter((d) => d.active)}
           lang={lang}
           onClose={() => { setModal(null); setActivePatient(null); }}
           onRefresh={() => openPatient(activePatient.id, modal)}
@@ -414,6 +447,7 @@ export function AdminDashboard() {
           cycleTooth={cycleTooth}
           uploadFiles={uploadFiles}
           printFollowUps={printFollowUps}
+          showToast={showToast}
         />
       )}
 
@@ -446,7 +480,21 @@ export function AdminDashboard() {
           showToast={showToast}
         />
       )}
+
+      {modal === 'doctors' && (
+        <DoctorsModal
+          doctors={doctors}
+          lang={lang}
+          onClose={() => setModal(null)}
+          onRefresh={loadDoctors}
+          showToast={showToast}
+        />
+      )}
     </div>
+
+    <div id="printable-followups-container" className="printable-followups-only" style={{ display: 'none' }} />
+    <div id="printable-patient-container" className="printable-patient-only" style={{ display: 'none' }} />
+  </>
   );
 }
 
@@ -563,11 +611,12 @@ function DeleteConfirmModal({
 }
 
 function PatientModal({
-  mode, patient, attachments, lang, onClose, onRefresh, onSave, cycleTooth, uploadFiles, printFollowUps,
+  mode, patient, attachments, doctors, lang, onClose, onRefresh, onSave, cycleTooth, uploadFiles, printFollowUps, showToast,
 }: {
   mode: 'view' | 'edit' | 'followup';
   patient: Patient;
   attachments: Attachment[];
+  doctors: Doctor[];
   lang: 'ar' | 'en';
   onClose: () => void;
   onRefresh: () => void;
@@ -575,12 +624,15 @@ function PatientModal({
   cycleTooth: (id: string) => void;
   uploadFiles: (files: FileList | null) => void;
   printFollowUps: (ids: string[]) => void;
+  showToast: (msg: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }) {
   const [fuDate, setFuDate] = useState('');
   const [fuTime, setFuTime] = useState('10:00');
   const [fuProcedure, setFuProcedure] = useState('');
   const [fuNotes, setFuNotes] = useState('');
+  const [doctorNotes, setDoctorNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     const latest = patient.followUps?.[patient.followUps.length - 1];
@@ -588,6 +640,7 @@ function PatientModal({
     setFuTime(latest?.time || '10:00');
     setFuProcedure(latest?.procedure || '');
     setFuNotes(latest?.doctorNotes || '');
+    setDoctorNotes(patient.doctorNotes || '');
   }, [patient]);
 
   const modeConfig = {
@@ -615,6 +668,23 @@ function PatientModal({
     onSave();
   }
 
+  async function saveDoctorNotes() {
+    setSavingNotes(true);
+    const res = await fetch(`/api/patients/${patient.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doctorNotes }),
+    });
+    setSavingNotes(false);
+    if (res.ok) {
+      showToast(lang === 'ar' ? 'تم حفظ ملاحظات الطبيب' : 'Doctor notes saved', 'success');
+      onRefresh();
+      onSave();
+    } else {
+      showToast(lang === 'ar' ? 'فشل حفظ الملاحظات' : 'Failed to save notes', 'error');
+    }
+  }
+
   async function saveEdit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaving(true);
@@ -640,6 +710,7 @@ function PatientModal({
       hasInsurance: String(fd.get('hasInsurance') || 'No'),
       insuranceCompany: String(fd.get('insuranceCompany') || ''),
       insuranceCardNo: String(fd.get('insuranceCardNo') || ''),
+      doctorId: String(fd.get('doctorId') || '') || null,
       medicalHistory,
     };
 
@@ -684,7 +755,7 @@ function PatientModal({
         mode === 'view' ? (
           <>
             <button type="button" className="btn btn-secondary" onClick={() => printFollowUps([patient.id])}>🖨️ {lang === 'ar' ? 'طباعة المتابعة' : 'Print Follow-up'}</button>
-            <button type="button" className="btn btn-secondary" onClick={() => window.print()}>🖨️ {t(lang, 'printFile')}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => printPatientFile(patient, lang)}>🖨️ {t(lang, 'printFile')}</button>
             <button type="button" className="btn btn-primary" onClick={onClose}>{t(lang, 'closeModal')}</button>
           </>
         ) : mode === 'edit' ? undefined : (
@@ -716,7 +787,7 @@ function PatientModal({
             <div className="form-group">
               <label>{lang === 'ar' ? 'الإجراء' : 'Procedure'} *</label>
               <div className="procedure-chips-container">
-                {['Scanning', 'Suture Remove', 'Impression', 'Deliver'].map((p) => (
+                {FOLLOWUP_PROCEDURES.map((p) => (
                   <span key={p} className={`procedure-chip${fuProcedure === p ? ' active' : ''}`} onClick={() => setFuProcedure(p)}>{p}</span>
                 ))}
               </div>
@@ -766,6 +837,15 @@ function PatientModal({
               <div className="form-group"><label>{t(lang, 'nationalId')}</label><input name="nationalId" defaultValue={patient.nationalId} className="form-control" /></div>
               <div className="form-group"><label>{t(lang, 'dob')}</label><input name="dob" type="date" defaultValue={patient.dob} className="form-control no-icon" /></div>
               <div className="form-group"><label>{t(lang, 'gender')}</label><select name="gender" defaultValue={patient.gender} className="form-control no-icon"><option value="Male">{t(lang, 'male')}</option><option value="Female">{t(lang, 'female')}</option></select></div>
+              <div className="form-group">
+                <label>{lang === 'ar' ? 'الطبيب المعالج' : 'Assigned Doctor'}</label>
+                <select name="doctorId" defaultValue={patient.doctorId || ''} className="form-control no-icon">
+                  <option value="">{lang === 'ar' ? '— غير محدد —' : '— Unassigned —'}</option>
+                  {doctors.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="form-group"><label>{t(lang, 'phone')}</label><input name="phone" defaultValue={patient.phone} className="form-control" dir="ltr" required /></div>
               <div className="form-group"><label>{t(lang, 'additionalPhone')}</label><input name="additionalPhone" defaultValue={patient.additionalPhone} className="form-control" dir="ltr" required /></div>
               <div className="form-group"><label>{t(lang, 'emergencyName')}</label><input name="emergencyName" defaultValue={patient.emergencyName} className="form-control" /></div>
@@ -810,6 +890,7 @@ function PatientModal({
             { label: t(lang, 'nationalId'), value: patient.nationalId },
             { label: t(lang, 'dob'), value: patient.dob },
             { label: t(lang, 'gender'), value: patient.gender === 'Male' ? t(lang, 'male') : t(lang, 'female') },
+            { label: lang === 'ar' ? 'الطبيب المعالج' : 'Assigned Doctor', value: patient.doctorName || '-' },
             { label: t(lang, 'bloodType'), value: patient.bloodType },
             { label: t(lang, 'address'), value: patient.address },
           ]} />
@@ -819,6 +900,29 @@ function PatientModal({
               <h5 className="admin-section-title">📝 {t(lang, 'patientNotes')}</h5>
               <div className="admin-notes-box">{patient.patientNotes}</div>
             </>
+          )}
+
+          <h5 className="admin-section-title">🩺 {lang === 'ar' ? 'ملاحظات الطبيب' : 'Doctor Notes'}</h5>
+          <div className="doctor-notes-section no-print">
+            <textarea
+              className="form-control no-icon"
+              rows={4}
+              value={doctorNotes}
+              onChange={(e) => setDoctorNotes(e.target.value)}
+              placeholder={lang === 'ar' ? 'أضف ملاحظات الطبيب حول هذه الحالة...' : 'Add doctor notes about this case...'}
+            />
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              style={{ marginTop: '0.75rem' }}
+              onClick={saveDoctorNotes}
+              disabled={savingNotes}
+            >
+              {savingNotes ? '⏳' : `💾 ${lang === 'ar' ? 'حفظ الملاحظات' : 'Save Notes'}`}
+            </button>
+          </div>
+          {patient.doctorNotes && (
+            <div className="admin-notes-box doctor-notes-box print-only">{patient.doctorNotes}</div>
           )}
 
           <h5 className="admin-section-title">🏥 {t(lang, 'secMedical')}</h5>
@@ -908,6 +1012,100 @@ function AuditModal({ logs, filter, lang, onFilter, onClose, onClear }: {
           </tbody>
         </table>
       </div>
+    </AdminModalShell>
+  );
+}
+
+function DoctorsModal({ doctors, lang, onClose, onRefresh, showToast }: {
+  doctors: Doctor[];
+  lang: 'ar' | 'en';
+  onClose: () => void;
+  onRefresh: () => void;
+  showToast: (msg: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
+}) {
+  async function addDoctor(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const res = await fetch('/api/doctors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: fd.get('name'),
+        specialty: fd.get('specialty'),
+        phone: fd.get('phone'),
+      }),
+    });
+    if (res.ok) {
+      showToast(lang === 'ar' ? 'تم إضافة الطبيب' : 'Doctor added', 'success');
+      e.currentTarget.reset();
+      onRefresh();
+    } else {
+      const d = await res.json();
+      showToast(d.error || 'Failed', 'error');
+    }
+  }
+
+  async function toggleDoctor(id: string, active: boolean) {
+    const res = await fetch(`/api/doctors?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !active }),
+    });
+    if (res.ok) onRefresh();
+  }
+
+  async function deleteDoctor(id: string, name: string) {
+    if (!confirm(lang === 'ar' ? `حذف الطبيب ${name}؟` : `Delete doctor ${name}?`)) return;
+    const res = await fetch(`/api/doctors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (res.ok) {
+      showToast(lang === 'ar' ? 'تم حذف الطبيب' : 'Doctor deleted', 'success');
+      onRefresh();
+    } else {
+      showToast(lang === 'ar' ? 'فشل الحذف' : 'Delete failed', 'error');
+    }
+  }
+
+  return (
+    <AdminModalShell
+      modeClass="admin-modal--doctors"
+      icon="🩺"
+      title={lang === 'ar' ? 'إدارة الأطباء' : 'Doctor Management'}
+      onClose={onClose}
+      wide
+      footer={<button type="button" className="btn btn-primary" onClick={onClose}>{t(lang, 'closeModal')}</button>}
+    >
+      <form onSubmit={addDoctor} className="admin-form-card user-add-form">
+        <h5 className="admin-section-title">➕ {lang === 'ar' ? 'إضافة طبيب' : 'Add Doctor'}</h5>
+        <div className="form-grid form-grid-3">
+          <input name="name" placeholder={lang === 'ar' ? 'اسم الطبيب *' : 'Doctor name *'} className="form-control" required />
+          <input name="specialty" placeholder={lang === 'ar' ? 'التخصص' : 'Specialty'} className="form-control" />
+          <input name="phone" placeholder={lang === 'ar' ? 'الهاتف' : 'Phone'} className="form-control" dir="ltr" />
+        </div>
+        <button type="submit" className="btn btn-primary btn-sm" style={{ marginTop: '0.75rem' }}>💾 {lang === 'ar' ? 'إضافة' : 'Add'}</button>
+      </form>
+      <h5 className="admin-section-title">📋 {lang === 'ar' ? 'قائمة الأطباء' : 'Doctors List'}</h5>
+      {doctors.length === 0 ? (
+        <p className="admin-empty-state">{lang === 'ar' ? 'لا يوجد أطباء' : 'No doctors yet'}</p>
+      ) : (
+        doctors.map((d) => (
+          <div key={d.id} className="user-list-item">
+            <div className="user-list-info">
+              <span className="user-list-icon">🩺</span>
+              <div>
+                <strong>{d.name}</strong>
+                <small>{[d.specialty, d.phone].filter(Boolean).join(' · ') || (lang === 'ar' ? 'بدون تفاصيل' : 'No details')}</small>
+                {!d.active && <small style={{ color: '#ef4444' }}>{lang === 'ar' ? ' (غير نشط)' : ' (inactive)'}</small>}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.35rem' }}>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => toggleDoctor(d.id, d.active)}>
+                {d.active ? (lang === 'ar' ? 'تعطيل' : 'Disable') : (lang === 'ar' ? 'تفعيل' : 'Enable')}
+              </button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => deleteDoctor(d.id, d.name)}>🗑️</button>
+            </div>
+          </div>
+        ))
+      )}
     </AdminModalShell>
   );
 }

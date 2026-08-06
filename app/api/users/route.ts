@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { ensureMigrations, getDb, type AdminUserRow } from '@/lib/db/index';
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireUserManagement } from '@/lib/auth';
 import { addAuditLog } from '@/lib/audit';
 import { createUserSchema } from '@/lib/validation';
+import { getSuperAdminUsername } from '@/lib/constants';
 
 export async function GET() {
   try {
-    await requireSuperAdmin();
+    await requireUserManagement();
     ensureMigrations();
     const db = getDb();
 
@@ -29,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireUserManagement();
     ensureMigrations();
     const body = await request.json();
     const parsed = createUserSchema.safeParse(body);
@@ -39,6 +40,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { username, password } = parsed.data;
+
+    if (username === getSuperAdminUsername()) {
+      return NextResponse.json({ error: 'Cannot use reserved username' }, { status: 409 });
+    }
+
     const db = getDb();
 
     const existing = db.prepare('SELECT id FROM admin_users WHERE username = ?').get(username);
@@ -72,7 +78,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const admin = await requireSuperAdmin();
+    const admin = await requireUserManagement();
     ensureMigrations();
     const username = new URL(request.url).searchParams.get('username');
 

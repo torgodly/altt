@@ -2,6 +2,8 @@ import { getIronSession, SessionOptions } from 'iron-session';
 import { cookies } from 'next/headers';
 import type { SessionUser } from '@/lib/types';
 
+import { getSuperAdminUsername, canManageUsers as checkCanManageUsers } from '@/lib/constants';
+
 export interface SessionData {
   user?: SessionUser;
 }
@@ -29,10 +31,15 @@ export async function requireAuth(): Promise<SessionUser> {
   return session.user;
 }
 
-export async function requireSuperAdmin(): Promise<SessionUser> {
+export async function requireUserManagement(): Promise<SessionUser> {
   const user = await requireAuth();
-  if (!user.isSuperAdmin) {
+  if (!checkCanManageUsers(user.username)) {
     throw new Error('FORBIDDEN');
   }
   return user;
+}
+
+/** @deprecated use requireUserManagement for user CRUD; kept for backward compat */
+export async function requireSuperAdmin(): Promise<SessionUser> {
+  return requireUserManagement();
 }

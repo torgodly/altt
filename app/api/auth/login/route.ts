@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { ensureMigrations, getDb, type AdminUserRow } from '@/lib/db/index';
 import { addAuditLog } from '@/lib/audit';
 import { loginSchema } from '@/lib/validation';
+import { canManageUsers } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
     session.user = {
       username: user.username,
       isSuperAdmin: user.is_super_admin === 1,
+      canManageUsers: canManageUsers(user.username),
     };
     await session.save();
 
