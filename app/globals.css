@@ -1630,55 +1630,408 @@ body.printing-patient-file .modal-backdrop {
   width: 100% !important;
   background: #ffffff !important;
   color: #000000 !important;
-  padding: 1.5cm !important;
+  padding: 0 !important;
   z-index: 999999 !important;
   direction: rtl;
 }
 
-.print-patient-sheet {
-  max-width: 100%;
+.print-patient-document {
+  background: #fff;
+  color: #000;
+  font-family: var(--font-primary);
 }
 
-.print-patient-header {
-  text-align: center;
-  border-bottom: 2px solid #000;
-  padding-bottom: 12px;
-  margin-bottom: 18px;
+.print-page {
+  padding: 1.2cm 1.5cm;
+  box-sizing: border-box;
 }
 
-.print-patient-header h1 {
+.print-page-1 {
+  page-break-after: always;
+  break-after: page;
+}
+
+.print-page-2 {
+  page-break-before: always;
+  break-before: page;
+}
+
+.print-doc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border-bottom: 2px solid #0284c7;
+  padding-bottom: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.print-doc-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid #0284c7;
+  object-fit: contain;
+}
+
+.print-doc-header h1 {
   margin: 0;
-  font-size: 16pt;
+  font-size: 14pt;
+  color: #0284c7;
 }
 
-.print-patient-file-badge {
+.print-doc-header p {
+  margin: 0.15rem 0 0;
+  font-size: 8.5pt;
+  color: #475569;
+}
+
+.print-patient-banner {
   display: flex;
   justify-content: space-between;
-  margin: 1rem 0;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #000;
-  background: #f8fafc;
+  align-items: flex-start;
+  gap: 1rem;
+  border-bottom: 2px solid #0284c7;
+  padding-bottom: 0.65rem;
+  margin-bottom: 0.85rem;
 }
 
-.print-patient-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0.75rem 0;
+.print-patient-banner h2 {
+  margin: 0 0 0.2rem;
+  font-size: 13pt;
+  color: #0284c7;
 }
 
-.print-patient-table th,
-.print-patient-table td {
-  border: 1px solid #000;
-  padding: 6px 10px;
-  text-align: right;
+.print-patient-banner p {
+  margin: 0;
+  font-size: 8.5pt;
+  color: #64748b;
+}
+
+.print-file-badge {
+  border: 2px solid #000;
+  padding: 0.35rem 0.65rem;
+  text-align: center;
+  min-width: 120px;
+}
+
+.print-file-badge span {
+  display: block;
+  font-size: 7.5pt;
+  color: #64748b;
+}
+
+.print-file-badge strong {
+  font-size: 12pt;
+}
+
+.print-section-title {
+  margin: 0.75rem 0 0.4rem;
   font-size: 10pt;
+  color: #0284c7;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 0.2rem;
 }
 
-.print-patient-notes {
-  margin: 1rem 0;
-  padding: 0.75rem;
+.print-section-sub {
+  margin: 0 0 0.5rem;
+  font-size: 8pt;
+  color: #64748b;
+}
+
+.print-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 8.5pt;
+  padding: 0.5rem 0.65rem;
   border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.print-info-full {
+  grid-column: 1 / -1;
+}
+
+.print-notes-box,
+.print-insurance-box,
+.print-doctor-notes-box {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 8.5pt;
+  margin-bottom: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.print-doctor-notes-box {
+  min-height: 60px;
+  border-style: dashed;
+  border-color: #0284c7;
+}
+
+.print-muted {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* All yes/no medical questions — compact 2-column grid on page 1 */
+.print-medical-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.print-medical-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 8pt;
+  line-height: 1.35;
+  padding: 0.25rem 0;
+  border-bottom: 1px dotted #e2e8f0;
+}
+
+.print-medical-q {
+  flex: 1;
+}
+
+.print-med-badge {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 8pt;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid #000;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.print-badge-yes {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.print-badge-no {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #15803d;
+}
+
+.print-page2-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  border-bottom: 2px solid #0284c7;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.print-page2-header h2 {
+  margin: 0;
+  font-size: 11pt;
+  color: #0284c7;
+}
+
+.print-page2-header p {
+  margin: 0.2rem 0 0;
+  font-size: 8.5pt;
+}
+
+.print-date {
+  font-size: 8pt;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* Odontogram print */
+.print-odontogram-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.print-odontogram-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  font-size: 7pt;
+  margin-bottom: 0.35rem;
+}
+
+.print-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.print-legend-item i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+  border-radius: 2px;
+}
+
+.print-odontogram-hint {
+  text-align: center;
+  font-size: 7.5pt;
+  color: #64748b;
+  margin: 0 0 0.35rem;
+}
+
+.print-palmer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  border: 1.5px solid #000;
+  padding: 4px;
+}
+
+.print-palmer-quadrant {
+  padding: 4px;
+}
+
+.print-palmer-quadrant--ur { border-bottom: 1px dashed #64748b; border-inline-end: 1px dashed #64748b; }
+.print-palmer-quadrant--ul { border-bottom: 1px dashed #64748b; border-inline-start: 1px dashed #64748b; }
+.print-palmer-quadrant--lr { border-inline-end: 1px dashed #64748b; }
+.print-palmer-quadrant--ll { border-inline-start: 1px dashed #64748b; }
+
+.print-palmer-title {
+  font-size: 7pt;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3px;
+}
+
+.print-palmer-row {
+  display: flex;
+  gap: 2px;
+}
+
+.print-tooth-box {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1px;
+  background: #fff;
+}
+
+.print-tooth-num {
+  font-size: 6pt;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.print-tooth-svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--tooth-color, #cbd5e1);
+}
+
+.print-tooth-status {
+  font-size: 5pt;
+  line-height: 1;
+  color: #475569;
+}
+
+/* Attachments print */
+.print-attachments-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.print-attachment-item {
+  border: 1px solid #000;
+  padding: 0.35rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.print-attachment-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  max-height: 220px;
+  overflow: hidden;
   background: #f8fafc;
+  margin-bottom: 0.25rem;
+}
+
+.print-attachment-preview img {
+  max-width: 100%;
+  max-height: 210px;
+  object-fit: contain;
+}
+
+.print-attachment-file {
+  font-size: 24pt;
+}
+
+.print-attachment-name {
+  font-size: 7.5pt;
+  text-align: center;
+  word-break: break-word;
+}
+
+.print-empty {
+  font-size: 8.5pt;
+  color: #64748b;
+  padding: 0.5rem;
+  border: 1px dashed #cbd5e1;
+  text-align: center;
+}
+
+@media print {
+  body.printing-patient-file {
+    background: #fff !important;
+  }
+
+  #printable-patient-container.active-print {
+    position: static !important;
+    padding: 0 !important;
+  }
+
+  .print-page-1 {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .print-page-2 {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .print-medical-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .print-attachment-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-attachment-preview img {
+    max-height: 240px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .print-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .print-only {

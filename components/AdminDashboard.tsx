@@ -814,7 +814,7 @@ function PatientModal({
         mode === 'view' ? (
           <>
             <button type="button" className="btn btn-secondary" onClick={() => printFollowUps([patient.id])}>🖨️ {lang === 'ar' ? 'طباعة المتابعة' : 'Print Follow-up'}</button>
-            <button type="button" className="btn btn-secondary" onClick={() => printPatientFile(patient, lang)}>🖨️ {t(lang, 'printFile')}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => printPatientFile(patient, lang, attachments)}>🖨️ {t(lang, 'printFile')}</button>
             <button type="button" className="btn btn-primary" onClick={onClose}>{t(lang, 'closeModal')}</button>
           </>
         ) : mode === 'edit' ? undefined : (
