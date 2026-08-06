@@ -12,6 +12,11 @@ export function AdminLogin() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    document.body.classList.add('admin-page');
+    return () => document.body.classList.remove('admin-page');
+  }, []);
+
+  useEffect(() => {
     fetch('/api/auth/me')
       .then((r) => r.json())
       .then((d) => {
@@ -52,58 +57,45 @@ export function AdminLogin() {
   }
 
   return (
-    <div className="login-wrapper">
-      <div className="glass-card login-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <button type="button" className="btn-icon-toggle" onClick={toggleTheme}>
-            <span>{theme === 'dark' ? '🌙' : '☀️'}</span>
-            <span>{theme === 'dark' ? t(lang, 'lightTheme') : t(lang, 'darkTheme')}</span>
-          </button>
-          <button type="button" className="btn-icon-toggle" onClick={toggleLang}>
-            🌐 <span>{t(lang, 'langSwitch')}</span>
-          </button>
-        </div>
-
-        <div className="brand-logo" style={{ justifyContent: 'center', flexDirection: 'column', textAlign: 'center', marginBottom: '2rem' }}>
-          <div className="logo-icon" style={{ width: 70, height: 70, marginBottom: '0.75rem' }}>
-            <img src="/images/logo.png" alt="" className="brand-logo-img" />
+    <div className="admin-login-page">
+      <div className="admin-login-card">
+        <div className="admin-login-card-header">
+          <div className="admin-login-brand">
+            <img src="/images/logo.png" alt="" />
+            <div>
+              <h1>{lang === 'ar' ? 'لوحة التحكم' : 'Admin Panel'}</h1>
+              <p>{t(lang, 'clinicTitle')}</p>
+            </div>
           </div>
-          <h2
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 800,
-              background: 'var(--accent-gradient)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            {lang === 'ar' ? 'تسجيل دخول لوحة التحكم' : 'Admin Dashboard Login'}
-          </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {t(lang, 'clinicTitle')}
-          </p>
+          <div className="admin-login-toggles">
+            <button type="button" className="admin-topbar-btn" onClick={toggleTheme} aria-label="Theme">
+              {theme === 'dark' ? '🌙' : '☀️'}
+            </button>
+            <button type="button" className="admin-topbar-btn" onClick={toggleLang} aria-label="Language">
+              🌐
+            </button>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+        <h2>{lang === 'ar' ? 'تسجيل الدخول' : 'Sign in to continue'}</h2>
+
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <div className="form-group">
             <label htmlFor="username">{lang === 'ar' ? 'اسم المستخدم' : 'Username'}</label>
             <input id="username" name="username" type="text" className="form-control no-icon" required autoComplete="username" />
           </div>
-          <div className="form-group" style={{ marginBottom: '1.75rem' }}>
+          <div className="form-group">
             <label htmlFor="password">{lang === 'ar' ? 'كلمة المرور' : 'Password'}</label>
             <input id="password" name="password" type="password" className="form-control no-icon" required autoComplete="current-password" />
           </div>
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            🔑 {lang === 'ar' ? 'دخول النظام' : 'Sign In'}
+            {loading ? '⏳ ...' : `🔑 ${lang === 'ar' ? 'دخول النظام' : 'Sign In'}`}
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link href="/" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            ← {lang === 'ar' ? 'العودة لصفحة تسجيل المريض' : 'Back to patient registration'}
-          </Link>
-        </div>
+        <Link href="/" className="admin-login-back">
+          ← {lang === 'ar' ? 'العودة لتسجيل المريض' : 'Back to patient registration'}
+        </Link>
       </div>
     </div>
   );

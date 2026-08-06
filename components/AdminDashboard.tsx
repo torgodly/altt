@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/components/AppProvider';
-import { Header } from '@/components/Header';
+import { AdminLayout } from '@/components/AdminLayout';
 import { t } from '@/lib/i18n';
 import { formatTimeTo12Hour, getDayNameFromDate, escapeHtml } from '@/lib/utils';
 import { printPatientFile } from '@/lib/print-patient';
@@ -47,6 +47,8 @@ export function AdminDashboard() {
   const [auditFilter, setAuditFilter] = useState('all');
   const [adminUsers, setAdminUsers] = useState<{ username: string; is_super_admin: number }[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const loadPatients = useCallback(async () => {
     const params = new URLSearchParams();
@@ -272,102 +274,130 @@ export function AdminDashboard() {
     }
   }
 
-  const adminActions = (
-    <>
-      <button type="button" className="btn btn-secondary btn-sm" onClick={exportBackup}>
-        💾 {t(lang, 'backupRestore')}
-      </button>
-      <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
-        📥 {lang === 'ar' ? 'استعادة' : 'Restore'}
-        <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => e.target.files?.[0] && importBackup(e.target.files[0])} />
-      </label>
-      <button type="button" className="btn btn-secondary btn-sm" onClick={openAudit}>
-        📋 {t(lang, 'auditLogTitle')}
-      </button>
-      <button type="button" className="btn btn-secondary btn-sm" onClick={openDoctors}>
-        🩺 {lang === 'ar' ? 'إدارة الأطباء' : 'Doctors'}
-      </button>
-      {user?.canManageUsers && (
-        <button type="button" className="btn btn-secondary btn-sm" onClick={openUsers}>
-          👤 {lang === 'ar' ? 'إدارة المستخدمين' : 'Users'}
-        </button>
-      )}
-      <button type="button" className="btn btn-danger btn-sm" onClick={logout}>
-        🚪 {t(lang, 'logout')}
-      </button>
-    </>
-  );
+  const hasActiveFilters = followupFilter !== 'all' || !!doctorFilter || !!insurance;
 
   return (
     <>
-    <div className="app-container" id="dashboard-app">
-      <Header title={t(lang, 'adminDashboard')} subtitle={t(lang, 'clinicTitle')} adminActions={adminActions} />
+    <AdminLayout
+      user={user}
+      sidebarOpen={sidebarOpen}
+      onSidebarToggle={() => setSidebarOpen((v) => !v)}
+      onSidebarClose={() => setSidebarOpen(false)}
+      onOpenDoctors={openDoctors}
+      onOpenAudit={openAudit}
+      onOpenUsers={openUsers}
+      onExportBackup={exportBackup}
+      onImportBackup={importBackup}
+      onLogout={logout}
+    >
+      <section className="admin-stats-grid">
+        <button type="button" className="admin-stat-card admin-stat-card--clickable" onClick={() => setFollowupFilter('followups_only')}>
+          <div className="admin-stat-icon admin-stat-icon--green">📅</div>
+          <div className="admin-stat-body">
+            <span>{t(lang, 'followUpsTitle')}</span>
+            <strong>{stats.followUps}</strong>
+          </div>
+        </button>
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--blue">👥</div>
+          <div className="admin-stat-body">
+            <span>{t(lang, 'totalPatients')}</span>
+            <strong>{stats.total}</strong>
+          </div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--teal">📅</div>
+          <div className="admin-stat-body">
+            <span>{t(lang, 'todayRegistrations')}</span>
+            <strong>{stats.today}</strong>
+          </div>
+        </div>
+        <div className="admin-stat-card">
+          <div className="admin-stat-icon admin-stat-icon--purple">📆</div>
+          <div className="admin-stat-body">
+            <span>{t(lang, 'monthlyRegistrations')}</span>
+            <strong>{stats.month}</strong>
+          </div>
+        </div>
+      </section>
 
-      <div className="dashboard-grid">
-        <div className="stat-card" style={{ cursor: 'pointer' }} onClick={() => setFollowupFilter('followups_only')}>
-          <div className="stat-icon followups" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', fontSize: '1.5rem' }}>📅</div>
-          <div className="stat-info"><span>{t(lang, 'followUpsTitle')}</span><h3>{stats.followUps}</h3></div>
+      <section className="admin-panel">
+        <div className="admin-panel-header">
+          <div>
+            <h2>{lang === 'ar' ? 'سجل المرضى' : 'Patient Records'}</h2>
+            <p>{patients.length} {lang === 'ar' ? 'نتيجة' : 'results'}</p>
+          </div>
+          <div className="admin-panel-header-actions">
+            {selectedIds.length > 0 && (
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => printFollowUps(selectedIds)}>
+                🖨️ {selectedIds.length}
+              </button>
+            )}
+            <Link href="/" className="btn btn-primary btn-sm admin-new-patient-btn">
+              ➕ {lang === 'ar' ? 'مريض جديد' : 'New Patient'}
+            </Link>
+          </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-icon total">👥</div>
-          <div className="stat-info"><span>{t(lang, 'totalPatients')}</span><h3>{stats.total}</h3></div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon today">📅</div>
-          <div className="stat-info"><span>{t(lang, 'todayRegistrations')}</span><h3>{stats.today}</h3></div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon month">📆</div>
-          <div className="stat-info"><span>{t(lang, 'monthlyRegistrations')}</span><h3>{stats.month}</h3></div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon recent">✨</div>
-          <div className="stat-info"><span>{t(lang, 'recentPatients')}</span><h3>{stats.recent}</h3></div>
-        </div>
-      </div>
 
-      <div className="glass-card">
-        <div className="toolbar-card">
-          <div className="search-box">
+        <div className="admin-toolbar">
+          <div className="admin-search-wrap">
+            <span className="admin-search-icon">🔍</span>
             <input
-              type="text"
-              className="form-control"
+              type="search"
+              className="form-control admin-search-input"
               placeholder={t(lang, 'searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="filter-actions">
-            <select className="form-control no-icon" value={followupFilter} onChange={(e) => setFollowupFilter(e.target.value)} style={{ width: 'auto', minWidth: 220 }}>
-              <option value="all">👥 {lang === 'ar' ? 'جميع المرضى' : 'All Patients'}</option>
-              <option value="followups_only">📅 {lang === 'ar' ? 'حالات المتابعة' : 'Follow-ups'}</option>
-              <option value="followups_added_today">🟢 {lang === 'ar' ? 'متابعات اليوم' : 'Added Today'}</option>
-              <option value="followups_added_yesterday">🟡 {lang === 'ar' ? 'متابعات أمس' : 'Added Yesterday'}</option>
-              <option value="appointment_today">🔔 {lang === 'ar' ? 'موعد اليوم' : 'Today Appointment'}</option>
-              <option value="appointment_tomorrow">⏰ {lang === 'ar' ? 'موعد الغد' : 'Tomorrow Appointment'}</option>
-            </select>
-            <select className="form-control no-icon" value={doctorFilter} onChange={(e) => setDoctorFilter(e.target.value)} style={{ width: 'auto', minWidth: 180 }}>
-              <option value="">{lang === 'ar' ? 'جميع الأطباء' : 'All Doctors'}</option>
-              {doctors.filter((d) => d.active).map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-            <select className="form-control no-icon" value={insurance} onChange={(e) => setInsurance(e.target.value)} style={{ width: 'auto' }}>
-              <option value="">{t(lang, 'allInsurance')}</option>
-              <option value="Yes">{t(lang, 'yes')}</option>
-              <option value="No">{t(lang, 'no')}</option>
-            </select>
-            {selectedIds.length > 0 && (
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => printFollowUps(selectedIds)}>
-                🖨️ {t(lang, 'printSelectedFollowups')} ({selectedIds.length})
-              </button>
-            )}
-            <Link href="/" className="btn btn-primary btn-sm">➕ {lang === 'ar' ? 'تسجيل مريض جديد' : 'New Patient'}</Link>
-          </div>
+          <button
+            type="button"
+            className={`btn btn-secondary btn-sm admin-filter-toggle${filtersOpen ? ' active' : ''}${hasActiveFilters ? ' has-filters' : ''}`}
+            onClick={() => setFiltersOpen((v) => !v)}
+          >
+            ⚙️ {lang === 'ar' ? 'تصفية' : 'Filters'}
+            {hasActiveFilters && <span className="admin-filter-badge" />}
+          </button>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
+        <div className={`admin-filters${filtersOpen ? ' open' : ''}`}>
+          <select className="form-control no-icon" value={followupFilter} onChange={(e) => setFollowupFilter(e.target.value)}>
+            <option value="all">{lang === 'ar' ? 'جميع المرضى' : 'All Patients'}</option>
+            <option value="followups_only">{lang === 'ar' ? 'حالات المتابعة' : 'Follow-ups'}</option>
+            <option value="followups_added_today">{lang === 'ar' ? 'متابعات اليوم' : 'Added Today'}</option>
+            <option value="followups_added_yesterday">{lang === 'ar' ? 'متابعات أمس' : 'Added Yesterday'}</option>
+            <option value="appointment_today">{lang === 'ar' ? 'موعد اليوم' : 'Today Appointment'}</option>
+            <option value="appointment_tomorrow">{lang === 'ar' ? 'موعد الغد' : 'Tomorrow Appointment'}</option>
+          </select>
+          <select className="form-control no-icon" value={doctorFilter} onChange={(e) => setDoctorFilter(e.target.value)}>
+            <option value="">{lang === 'ar' ? 'جميع الأطباء' : 'All Doctors'}</option>
+            {doctors.filter((d) => d.active).map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+          <select className="form-control no-icon" value={insurance} onChange={(e) => setInsurance(e.target.value)}>
+            <option value="">{t(lang, 'allInsurance')}</option>
+            <option value="Yes">{t(lang, 'yes')}</option>
+            <option value="No">{t(lang, 'no')}</option>
+          </select>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                setFollowupFilter('all');
+                setDoctorFilter('');
+                setInsurance('');
+              }}
+            >
+              ✕ {lang === 'ar' ? 'مسح' : 'Clear'}
+            </button>
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="admin-table-wrap admin-table-desktop table-responsive">
+          <table className="data-table admin-data-table">
             <thead>
               <tr>
                 <th style={{ width: 38, textAlign: 'center' }}>
@@ -379,12 +409,12 @@ export function AdminDashboard() {
                 <th>{t(lang, 'phone')}</th>
                 <th>{t(lang, 'nationalNumber')}</th>
                 <th>{t(lang, 'nextVisitHeader')}</th>
-                <th style={{ textAlign: 'left' }}>{t(lang, 'actions')}</th>
+                <th>{t(lang, 'actions')}</th>
               </tr>
             </thead>
             <tbody>
               {patients.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>{t(lang, 'noData')}</td></tr>
+                <tr><td colSpan={8} className="admin-empty-state">{t(lang, 'noData')}</td></tr>
               ) : (
                 patients.map((p) => {
                   const latest = getLatestFollowUp(p);
@@ -400,19 +430,11 @@ export function AdminDashboard() {
                       <td>{p.nationalNumber || '-'}</td>
                       <td>{latest ? `${latest.date} ${latest.time12 || formatTimeTo12Hour(latest.time, lang)}` : '-'}</td>
                       <td>
-                        <div className="admin-actions-row">
-                          <button type="button" className="admin-action-btn view" onClick={() => openPatient(p.id, 'view')} title={t(lang, 'viewFile')}>
-                            <span>👁️</span><small>{t(lang, 'viewFile')}</small>
-                          </button>
-                          <button type="button" className="admin-action-btn edit" onClick={() => openPatient(p.id, 'edit')} title={t(lang, 'editFile')}>
-                            <span>✏️</span><small>{t(lang, 'editFile')}</small>
-                          </button>
-                          <button type="button" className="admin-action-btn followup" onClick={() => openPatient(p.id, 'followup')} title={t(lang, 'followUpBtn')}>
-                            <span>📅</span><small>{t(lang, 'followUpBtn')}</small>
-                          </button>
-                          <button type="button" className="admin-action-btn delete" onClick={() => setDeleteTarget(p)} title={t(lang, 'deleteFile')}>
-                            <span>🗑️</span><small>{t(lang, 'deleteFile')}</small>
-                          </button>
+                        <div className="admin-row-actions">
+                          <button type="button" className="admin-row-btn view" onClick={() => openPatient(p.id, 'view')} title={t(lang, 'viewFile')}>👁️</button>
+                          <button type="button" className="admin-row-btn edit" onClick={() => openPatient(p.id, 'edit')} title={t(lang, 'editFile')}>✏️</button>
+                          <button type="button" className="admin-row-btn followup" onClick={() => openPatient(p.id, 'followup')} title={t(lang, 'followUpBtn')}>📅</button>
+                          <button type="button" className="admin-row-btn delete" onClick={() => setDeleteTarget(p)} title={t(lang, 'deleteFile')}>🗑️</button>
                         </div>
                       </td>
                     </tr>
@@ -422,7 +444,44 @@ export function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+
+        {/* Mobile cards */}
+        <div className="admin-patient-cards">
+          {patients.length === 0 ? (
+            <p className="admin-empty-state">{t(lang, 'noData')}</p>
+          ) : (
+            patients.map((p) => {
+              const latest = getLatestFollowUp(p);
+              return (
+                <article key={p.id} className="admin-patient-card">
+                  <div className="admin-patient-card-top">
+                    <label className="admin-patient-check">
+                      <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={(e) => toggleSelect(p.id, e.target.checked)} />
+                    </label>
+                    <div className="admin-patient-card-info">
+                      <strong>{p.fullName}</strong>
+                      <code className="file-code">{p.fileNumber}</code>
+                    </div>
+                  </div>
+                  <div className="admin-patient-card-meta">
+                    <span>📞 <span dir="ltr">{p.phone}</span></span>
+                    {p.doctorName && <span>🩺 {p.doctorName}</span>}
+                    {latest && (
+                      <span>📅 {latest.date} {latest.time12 || formatTimeTo12Hour(latest.time, lang)}</span>
+                    )}
+                  </div>
+                  <div className="admin-patient-card-actions">
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => openPatient(p.id, 'view')}>👁️ {t(lang, 'viewFile')}</button>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => openPatient(p.id, 'edit')}>✏️ {t(lang, 'editFile')}</button>
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => openPatient(p.id, 'followup')}>📅 {t(lang, 'followUpBtn')}</button>
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => setDeleteTarget(p)}>🗑️</button>
+                  </div>
+                </article>
+              );
+            })
+          )}
+        </div>
+      </section>
 
       {deleteTarget && (
         <DeleteConfirmModal
@@ -490,7 +549,7 @@ export function AdminDashboard() {
           showToast={showToast}
         />
       )}
-    </div>
+    </AdminLayout>
 
     <div id="printable-followups-container" className="printable-followups-only" style={{ display: 'none' }} />
     <div id="printable-patient-container" className="printable-patient-only" style={{ display: 'none' }} />
